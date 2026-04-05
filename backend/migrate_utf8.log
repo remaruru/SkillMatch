@@ -1,0 +1,25 @@
+﻿Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": MySQL database "skillmatch" at "localhost:3306"
+node.exe : Error: Cannot drop index 
+'Match_applicantId_internshipId_key': needed in a foreign key 
+constraint
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Error: Cannot d.. 
+   . key constraint:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+   0: sql_schema_connector::apply_migration::migration_step
+           with step=DropIndex { index_id: IndexId(13) }
+             at schema-engine\connectors\sql-schema-connector\s
+rc\apply_migration.rs:21
+   1: sql_schema_connector::apply_migration::apply_migration
+             at schema-engine\connectors\sql-schema-connector\s
+rc\apply_migration.rs:10
+   2: schema_core::state::SchemaPush
+             at schema-engine\core\src\state.rs:504
+

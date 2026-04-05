@@ -1,0 +1,26 @@
+# Node/Package
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Environment
+.env
+.env.local
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.sln
+*.sw?
+.DS_Store
+
+# Frameworks / Build
+frontend/dist/
+frontend/dist-ssr/
+backend/dist/
+backend/generated/
+
+# Uploads
+backend/uploads/*
+!backend/uploads/.gitkeep

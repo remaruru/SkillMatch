@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int               @id @default(autoincrement())
+  name             String
+  email            String            @unique
+  password         String
+  role             Role              @default(APPLICANT)
+  isActive         Boolean           @default(true)
+  accountStatus    AccountStatus     @default(PENDING)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  schoolIdPath     String?
+  applicantProfile ApplicantProfile?
+  employerProfile  EmployerProfile?
+  applications     Application[]
+  matches          Match[]
+  notifications    Notification[]
+}
+
+enum Role {
+  APPLICANT
+  EMPLOYER
+  ADMIN
+}
+
+enum AccountStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model ApplicantProfile {
+  id                 Int       @id @default(autoincrement())
+  userId             Int       @unique
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course             String?
+  yearLevel          String?
+  locationPreference String?
+  latitude           Float?
+  longitude          Float?
+  resumePath         String?
+  skills             Skill[]   @relation("ApplicantSkills")
+}
+
+model EmployerProfile {
+  id          Int          @id @default(autoincrement())
+  userId      Int          @unique
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName String
+  industry    String?
+  location    String?
+  description String?      @db.Text
+  internships Internship[]
+}
+
+model Skill {
+  id          Int                @id @default(autoincrement())
+  name        String             @unique
+  applicants  ApplicantProfile[] @relation("ApplicantSkills")
+  internships Internship[]       @relation("InternshipSkills")
+}
+
+model Internship {
+  id          Int               @id @default(autoincrement())
+  employerId  Int
+  employer    EmployerProfile   @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  title       String
+  description String            @db.Text
+  location    String?
+  latitude    Float?
+  longitude   Float?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  skills      Skill[]           @relation("InternshipSkills")
+  applications Application[]
+  matches     Match[]
+}
+
+model Application {
+  id           Int        @id @default(autoincrement())
+  applicantId  Int
+  applicant    User       @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  internshipId Int
+  internship   Internship @relation(fields: [internshipId], references: [id], onDelete: Cascade)
+  status       AppStatus  @default(PENDING)
+  resumePath   String?
+  coverMessage String?    @db.Text
+  appliedAt    DateTime   @default(now())
+
+  @@unique([applicantId, internshipId])
+}
+
+enum AppStatus {
+  PENDING
+  REVIEWED
+  ACCEPTED
+  REJECTED
+}
+
+model Match {
+  id           Int        @id @default(autoincrement())
+  applicantId  Int
+  applicant    User       @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  internshipId Int
+  internship   Internship @relation(fields: [internshipId], references: [id], onDelete: Cascade)
+  matchScore   Float
+  matchDetails Json?
+
+  @@unique([applicantId, internshipId])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
