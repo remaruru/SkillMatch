@@ -23,7 +23,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const validRole = role === 'EMPLOYER' ? 'EMPLOYER' : 'APPLICANT';
-        const schoolIdPath = req.file ? `/uploads/${req.file.filename}` : null;
+        const schoolIdPath = req.file ? req.file.path : null;
 
         const user = await prisma.user.create({
             data: {
