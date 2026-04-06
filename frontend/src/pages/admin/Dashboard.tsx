@@ -290,7 +290,7 @@ export default function AdminDashboard() {
                             </button>
                             {selectedApplicant.schoolIdPath ? (
                                 <img
-                                    src={`${BASE_URL}${selectedApplicant.schoolIdPath}`}
+                                    src={selectedApplicant.schoolIdPath.startsWith('http') ? selectedApplicant.schoolIdPath : `${BASE_URL}${selectedApplicant.schoolIdPath}`}
                                     alt="Student ID"
                                     className="max-w-full h-auto max-h-full object-contain rounded shadow-2xl transition-transform hover:scale-105 duration-300"
                                 />
