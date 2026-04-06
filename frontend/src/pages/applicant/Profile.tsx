@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 import LocationPicker from '../../components/LocationPicker';
-import { UploadCloud, CheckCircle2, FileText, X } from 'lucide-react';
+import { UploadCloud, CheckCircle2, FileText } from 'lucide-react';
 
 const COURSE_OPTIONS = ['BSIT', 'BSCS', 'BSIS', 'BSECE', 'BSCE', 'BSEE', 'Other'];
 

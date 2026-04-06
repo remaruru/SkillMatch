@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 import LocationPicker from '../../components/LocationPicker';
@@ -8,7 +7,7 @@ export default function EmployerProfile() {
     const [profile, setProfile] = useState({ companyName: '', industry: '', location: '', latitude: 14.5995, longitude: 120.9842, description: '' });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const navigate = useNavigate();
+    // const navigate = useNavigate(); // This was unused
 
     useEffect(() => {
         api.get('/employer/profile')

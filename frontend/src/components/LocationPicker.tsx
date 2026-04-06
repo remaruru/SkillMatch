@@ -80,7 +80,7 @@ export default function LocationPicker({
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [isGeocoding, setIsGeocoding] = useState(false);
-    const timeoutRef = useRef<number>();
+    const timeoutRef = useRef<number | null>(null);
     const autocompleteRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {

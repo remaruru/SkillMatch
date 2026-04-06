@@ -46,7 +46,7 @@ export const deleteInternshipListing = async (req, res) => {
 export const getPendingEmployers = async (req, res) => {
     try {
         const pendingEmployers = await prisma.user.findMany({
-            where: { role: 'EMPLOYER', isApproved: false },
+            where: { role: 'EMPLOYER', accountStatus: 'PENDING' },
             select: {
                 id: true,
                 email: true,
@@ -63,32 +63,78 @@ export const getPendingEmployers = async (req, res) => {
         res.status(500).json({ error: 'Error fetching pending employers' });
     }
 };
-export const approveEmployer = async (req, res) => {
+export const getPendingApplicants = async (req, res) => {
+    try {
+        const { docFilter } = req.query;
+        let whereClause = { role: 'APPLICANT', accountStatus: 'PENDING' };
+        if (docFilter === 'withResume')
+            whereClause.applicantProfile = { is: { resumePath: { not: null } } };
+        else if (docFilter === 'withoutResume')
+            whereClause.applicantProfile = { is: { resumePath: null } };
+        else if (docFilter === 'withSchoolId')
+            whereClause.schoolIdPath = { not: null };
+        else if (docFilter === 'withoutSchoolId')
+            whereClause.schoolIdPath = null;
+        else if (docFilter === 'complete') {
+            whereClause.schoolIdPath = { not: null };
+            whereClause.applicantProfile = { is: { resumePath: { not: null } } };
+        }
+        else if (docFilter === 'incomplete') {
+            whereClause.OR = [
+                { schoolIdPath: null },
+                { applicantProfile: { is: { resumePath: null } } }
+            ];
+        }
+        const pendingApplicants = await prisma.user.findMany({
+            where: whereClause,
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                createdAt: true,
+                schoolIdPath: true,
+                applicantProfile: {
+                    select: {
+                        course: true,
+                        yearLevel: true,
+                        resumePath: true
+                    }
+                }
+            }
+        });
+        res.status(200).json(pendingApplicants);
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error fetching pending applicants' });
+    }
+};
+export const approveUser = async (req, res) => {
     try {
         const { id } = req.params;
         const user = await prisma.user.update({
             where: { id: Number(id) },
-            data: { isApproved: true }
+            data: { accountStatus: 'APPROVED' }
         });
-        res.status(200).json({ message: 'Employer approved', user: { id: user.id } });
+        res.status(200).json({ message: 'User approved', user: { id: user.id } });
     }
     catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Error approving employer' });
+        res.status(500).json({ error: 'Error approving user' });
     }
 };
-export const rejectEmployer = async (req, res) => {
+export const rejectUser = async (req, res) => {
     try {
         const { id } = req.params;
-        // Optionally delete the user entirely, or just keep them permanently unapproved/inactive
-        await prisma.user.delete({
-            where: { id: Number(id) }
+        await prisma.user.update({
+            where: { id: Number(id) },
+            data: { accountStatus: 'REJECTED' }
         });
-        res.status(200).json({ message: 'Employer rejected and removed from system' });
+        res.status(200).json({ message: 'User rejected and removed from system' });
     }
     catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Error rejecting employer' });
+        res.status(500).json({ error: 'Error rejecting user' });
     }
 };
 //# sourceMappingURL=adminController.js.map

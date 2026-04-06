@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key-for-skillmatch-dev';
 export const register = async (req, res) => {
     try {
-        const { name, email, password, role, course, yearLevel, skills, companyName, industry } = req.body;
+        const { name, email, password, role, course, yearLevel, companyName, industry } = req.body;
         if (!name || !email || !password || !role) {
             res.status(400).json({ error: 'Name, email, password, and role are required' });
             return;
@@ -16,15 +16,16 @@ export const register = async (req, res) => {
             return;
         }
         const hashedPassword = await bcrypt.hash(password, 10);
-        const validRole = role === 'EMPLOYER' ? 'EMPLOYER' : role === 'ADMIN' ? 'ADMIN' : 'APPLICANT';
-        const isApproved = validRole === 'EMPLOYER' ? false : true;
+        const validRole = role === 'EMPLOYER' ? 'EMPLOYER' : 'APPLICANT';
+        const schoolIdPath = req.file ? `/uploads/${req.file.filename}` : null;
         const user = await prisma.user.create({
             data: {
                 name,
                 email,
                 password: hashedPassword,
                 role: validRole,
-                isApproved
+                accountStatus: 'PENDING',
+                schoolIdPath: validRole === 'APPLICANT' ? schoolIdPath : null,
             },
         });
         if (validRole === 'APPLICANT') {
@@ -35,24 +36,8 @@ export const register = async (req, res) => {
                     yearLevel: yearLevel || null,
                 }
             });
-            // Handle optional array of skill strings
-            if (skills && Array.isArray(skills)) {
-                for (const skillName of skills) {
-                    // find or create skill
-                    const skill = await prisma.skill.upsert({
-                        where: { name: skillName },
-                        update: {},
-                        create: { name: skillName }
-                    });
-                    // Link skill to applicant profile
-                    await prisma.applicantProfile.update({
-                        where: { userId: user.id },
-                        data: {
-                            skills: { connect: { id: skill.id } }
-                        }
-                    });
-                }
-            }
+            // Skills are NOT seeded at registration.
+            // They are extracted from a PDF resume upload after account approval.
         }
         else if (validRole === 'EMPLOYER') {
             await prisma.employerProfile.create({
@@ -63,8 +48,7 @@ export const register = async (req, res) => {
                 }
             });
         }
-        const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
-        res.status(201).json({ user: { id: user.id, name: user.name, email: user.email, role: user.role, isApproved: user.isApproved }, token });
+        res.status(201).json({ message: 'Registration Submitted! Pending Admin Approval.', status: 'pending', user: { id: user.id, role: user.role } });
     }
     catch (error) {
         console.error(error);
@@ -84,12 +68,18 @@ export const login = async (req, res) => {
             res.status(400).json({ error: 'Invalid credentials' });
             return;
         }
-        if (user.role === 'EMPLOYER' && !user.isApproved) {
-            res.status(403).json({ error: 'Your account is pending admin approval.' });
-            return;
+        if (user.role !== 'ADMIN') {
+            if (user.accountStatus === 'PENDING') {
+                res.status(403).json({ error: 'Your account is awaiting admin approval.' });
+                return;
+            }
+            if (user.accountStatus === 'REJECTED') {
+                res.status(403).json({ error: 'Your account registration was rejected. Please contact support.' });
+                return;
+            }
         }
         const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
-        res.status(200).json({ user: { id: user.id, name: user.name, email: user.email, role: user.role, isApproved: user.isApproved }, token });
+        res.status(200).json({ user: { id: user.id, name: user.name, email: user.email, role: user.role, accountStatus: user.accountStatus }, token });
     }
     catch (error) {
         console.error(error);

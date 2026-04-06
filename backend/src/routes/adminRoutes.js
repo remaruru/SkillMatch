@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getSystemStats, suspendUser, deleteInternshipListing, getPendingEmployers, approveEmployer, rejectEmployer } from '../controllers/adminController.js';
+import { getSystemStats, suspendUser, deleteInternshipListing, getPendingEmployers, getPendingApplicants, approveUser, rejectUser } from '../controllers/adminController.js';
 import { authenticate, authorizeRole } from '../middleware/authMiddleware.js';
 const router = Router();
 router.use(authenticate);
@@ -7,9 +7,10 @@ router.use(authorizeRole('ADMIN'));
 router.get('/stats', getSystemStats);
 router.put('/users/:id/suspend', suspendUser);
 router.delete('/internships/:id', deleteInternshipListing);
-// Employer administration
+// Administration
 router.get('/pending-employers', getPendingEmployers);
-router.put('/approve/:id', approveEmployer);
-router.put('/reject/:id', rejectEmployer);
+router.get('/pending-applicants', getPendingApplicants);
+router.put('/users/:id/approve', approveUser);
+router.put('/users/:id/reject', rejectUser);
 export default router;
 //# sourceMappingURL=adminRoutes.js.map
