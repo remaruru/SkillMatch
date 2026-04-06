@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -59,7 +59,7 @@ model EmployerProfile {
   location    String?
   latitude    Float?
   longitude   Float?
-  description String?      @db.Text
+  description String?
   internships Internship[]
 }
 
@@ -75,7 +75,7 @@ model Internship {
   employerId  Int
   employer    EmployerProfile   @relation(fields: [employerId], references: [id], onDelete: Cascade)
   title       String
-  description String            @db.Text
+  description String
   location    String?
   latitude    Float?
   longitude   Float?
@@ -94,7 +94,7 @@ model Application {
   internship   Internship @relation(fields: [internshipId], references: [id], onDelete: Cascade)
   status       AppStatus  @default(PENDING)
   resumePath   String?
-  coverMessage String?    @db.Text
+  coverMessage String?
   appliedAt    DateTime   @default(now())
 
   @@unique([applicantId, internshipId])
