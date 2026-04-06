@@ -3,6 +3,7 @@ services:
   - type: web
     name: skillmatch-backend
     runtime: node
+    plan: free # Explicitly set to free tier
     rootDir: backend
     buildCommand: npm install && npm run build
     startCommand: npm run start
@@ -10,7 +11,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        sync: false # Set this to your Aiven PostgreSQL Service URI
+        sync: false
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
       - key: CLOUDINARY_API_KEY
@@ -28,9 +29,10 @@ services:
   - type: web
     name: skillmatch-frontend
     runtime: static
+    plan: free # Explicitly set to free tier
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
     envVars:
       - key: VITE_API_URL
-        sync: false # Set this to your backend service URL (e.g., https://skillmatch-backend.onrender.com)
+        sync: false
