@@ -16,11 +16,11 @@ const storage = new CloudinaryStorage({
         const folder = 'skillmatch';
         
         // Define resource type and folder path-suffix based on file type
-        let resource_type: 'auto' | 'image' | 'video' | 'raw' = 'image';
+        let resource_type: 'auto' | 'image' | 'video' | 'raw' = 'auto'; // Use auto to bypass raw tier restrictions
         let folderPath = `${folder}/others`;
 
         if (file.fieldname === 'resume') {
-            resource_type = 'raw'; // Crucial for PDFs to keep formatting and link reliability
+            resource_type = 'auto'; // Auto allows Cloudinary to handle PDFs natively without strict raw rules
             folderPath = `${folder}/resumes`;
         } else if (file.fieldname === 'schoolId') {
             resource_type = 'image';
@@ -30,8 +30,7 @@ const storage = new CloudinaryStorage({
         return {
             folder: folderPath,
             resource_type: resource_type,
-            public_id: `${file.fieldname}-${Date.now()}`,
-            format: file.fieldname === 'resume' ? 'pdf' : undefined, // Optional: force PDF for resumes
+            public_id: `${file.fieldname}-${Date.now()}`
         };
     },
 });
