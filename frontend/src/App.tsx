@@ -12,9 +12,11 @@ import Layout from './components/Layout';
 import ApplicantDashboard from './pages/applicant/Dashboard';
 import ApplicantProfile from './pages/applicant/Profile';
 import ApplicantHistory from './pages/applicant/History';
+import ApplicantApplications from './pages/applicant/Applications';
 
 import EmployerDashboard from './pages/employer/Dashboard';
 import EmployerProfile from './pages/employer/Profile';
+import EmployerInternships from './pages/employer/Internships';
 import InternshipApplicants from './pages/employer/InternshipApplicants';
 import EmployerHistory from './pages/employer/History';
 
@@ -43,6 +45,7 @@ export default function App() {
           <Route element={<ProtectedRoute allowedRoles={['APPLICANT']} />}>
             <Route element={<Layout />}>
               <Route path="/applicant" element={<ApplicantDashboard />} />
+              <Route path="/applicant/applications" element={<ApplicantApplications />} />
               <Route path="/applicant/history" element={<ApplicantHistory />} />
               <Route path="/applicant/profile" element={<ApplicantProfile />} />
             </Route>
@@ -52,8 +55,9 @@ export default function App() {
           <Route element={<ProtectedRoute allowedRoles={['EMPLOYER']} />}>
             <Route element={<Layout />}>
               <Route path="/employer" element={<EmployerDashboard />} />
-              <Route path="/employer/history" element={<EmployerHistory />} />
+              <Route path="/employer/internships" element={<EmployerInternships />} />
               <Route path="/employer/internships/:id/applicants" element={<InternshipApplicants />} />
+              <Route path="/employer/history" element={<EmployerHistory />} />
               <Route path="/employer/profile" element={<EmployerProfile />} />
             </Route>
           </Route>

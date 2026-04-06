@@ -15,14 +15,16 @@ async function main() {
   await prisma.applicantProfile.deleteMany({});
   await prisma.user.deleteMany({});
 
-  const hashedPassword = await bcrypt.hash('password123', 10);
+  const adminPassword = await bcrypt.hash('admin', 10);
+  const employerPassword = await bcrypt.hash('employer', 10);
+  const applicantPassword = await bcrypt.hash('applicant', 10);
 
   // 1. Create Admin
   const admin = await prisma.user.create({
     data: {
       name: 'System Admin',
-      email: 'admin@skillmatch.com',
-      password: hashedPassword,
+      email: 'admin@gmail.com',
+      password: adminPassword,
       role: 'ADMIN',
       accountStatus: 'APPROVED',
     } as any,
@@ -37,8 +39,7 @@ async function main() {
 
   // 3. Create Employers
   const employerData = [
-    { name: 'TechCorp HR', email: 'hr@techcorp.com', companyName: 'TechCorp', industry: 'Software', location: 'Remote', description: 'Leading tech innovator.' },
-    { name: 'DataSys AI', email: 'jobs@datasys.com', companyName: 'DataSys', industry: 'AI & Data', location: 'New York', description: 'Data-driven insights.' },
+    { name: 'TechCorp HR', email: 'employer@gmail.com', companyName: 'TechCorp', industry: 'Software', location: 'Remote', description: 'Leading tech innovator.', password: employerPassword }
   ];
 
   const createdEmployers = [];
@@ -47,7 +48,7 @@ async function main() {
       data: {
         name: emp.name,
         email: emp.email,
-        password: hashedPassword,
+        password: emp.password,
         role: 'EMPLOYER',
         accountStatus: 'APPROVED',
         employerProfile: {
@@ -66,8 +67,7 @@ async function main() {
 
   // 4. Create Applicants
   const applicantData = [
-    { name: 'John Doe', email: 'john@student.edu', course: 'Computer Science', yearLevel: '3rd Year', locationPreference: 'Remote' },
-    { name: 'Jane Smith', email: 'jane@student.edu', course: 'Information Tech', yearLevel: '4th Year', locationPreference: 'New York' },
+    { name: 'John Doe', email: 'applicant@gmail.com', course: 'Computer Science', yearLevel: '3rd Year', locationPreference: 'Remote', password: applicantPassword }
   ];
 
   const createdApplicants = [];
@@ -76,7 +76,7 @@ async function main() {
       data: {
         name: app.name,
         email: app.email,
-        password: hashedPassword,
+        password: app.password,
         role: 'APPLICANT',
         accountStatus: 'APPROVED',
         applicantProfile: {
@@ -110,7 +110,7 @@ async function main() {
 
   await prisma.internship.create({
     data: {
-      employerId: (createdEmployers[1] as any).employerProfile.id,
+      employerId: (createdEmployers[0] as any).employerProfile.id,
       title: 'Data Science Intern',
       description: 'Work with Python and ML models.',
       location: 'New York',

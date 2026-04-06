@@ -48,17 +48,10 @@ export function CallToAction() {
 export function Footer() {
     return (
         <footer className="bg-white border-t border-gray-100 text-gray-500 py-12">
-            <div className="max-w-7xl mx-auto px-6 md:px-16 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="max-w-7xl mx-auto px-6 md:px-16 flex flex-col items-center justify-center gap-6">
                 <div className="flex items-center gap-2">
                     <BriefcaseBusiness className="w-6 h-6 text-indigo-600" />
                     <span className="text-xl font-bold text-gray-900">SkillMatch</span>
-                </div>
-                <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
-                    <Link to="#" className="hover:text-indigo-600 transition-colors">About</Link>
-                    <Link to="#" className="hover:text-indigo-600 transition-colors">Features</Link>
-                    <Link to="/login" className="hover:text-indigo-600 transition-colors">Log In</Link>
-                    <Link to="#" className="hover:text-indigo-600 transition-colors">Privacy Policy</Link>
-                    <Link to="#" className="hover:text-indigo-600 transition-colors">Terms of Service</Link>
                 </div>
             </div>
             <div className="mt-8 text-center text-sm text-gray-400 border-t border-gray-100 pt-8 max-w-7xl mx-auto px-6 md:px-16">

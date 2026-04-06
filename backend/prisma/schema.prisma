@@ -57,6 +57,8 @@ model EmployerProfile {
   companyName String
   industry    String?
   location    String?
+  latitude    Float?
+  longitude   Float?
   description String?      @db.Text
   internships Internship[]
 }

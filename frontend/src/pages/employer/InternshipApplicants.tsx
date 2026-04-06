@@ -1,9 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ExternalLink, UserCircle2 } from 'lucide-react';
+import { ArrowLeft, ExternalLink, UserCircle2, MapPin } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import api from '../../services/api';
+import api, { BASE_URL } from '../../services/api';
 import { getMatchColor } from '../../utils/colorUtils';
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 interface Skill {
     id: number;
@@ -13,6 +23,9 @@ interface Skill {
 interface ApplicantProfile {
     course: string | null;
     yearLevel: string | null;
+    locationPreference: string | null;
+    latitude: number | null;
+    longitude: number | null;
     resumePath: string | null;
     skills: Skill[];
 }
@@ -42,6 +55,7 @@ export default function InternshipApplicants() {
     const [error, setError] = useState<string | null>(null);
 
     const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; appId: number | null; newStatus: string }>({ isOpen: false, appId: null, newStatus: '' });
+    const [selectedApplicant, setSelectedApplicant] = useState<Application | null>(null);
 
     const fetchApplicants = () => {
         setLoading(true);
@@ -153,6 +167,83 @@ export default function InternshipApplicants() {
                 </div>
             )}
 
+            {selectedApplicant && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+                    <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                <UserCircle2 className="w-6 h-6 text-indigo-600" /> 
+                                {selectedApplicant.applicant.name}'s Profile
+                            </h2>
+                            <button onClick={() => setSelectedApplicant(null)} className="text-gray-500 hover:text-gray-700 text-2xl font-bold">&times;</button>
+                        </div>
+                        
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Course</p>
+                                    <p className="text-gray-900 font-medium">{selectedApplicant.applicant.applicantProfile?.course || 'Not specified'}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Year Level</p>
+                                    <p className="text-gray-900 font-medium">{selectedApplicant.applicant.applicantProfile?.yearLevel || 'Not specified'}</p>
+                                </div>
+                                <div className="col-span-2">
+                                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Email</p>
+                                    <p className="text-gray-900 font-medium">{selectedApplicant.applicant.email}</p>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Technical Skills</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {selectedApplicant.applicant.applicantProfile?.skills && selectedApplicant.applicant.applicantProfile.skills.length > 0 ? (
+                                        selectedApplicant.applicant.applicantProfile.skills.map((s: any) => (
+                                            <span key={s.id} className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-sm font-semibold border border-indigo-100">
+                                                {s.name}
+                                            </span>
+                                        ))
+                                    ) : (
+                                        <span className="text-gray-400 italic">No skills listed.</span>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            {selectedApplicant.applicant.applicantProfile?.latitude && selectedApplicant.applicant.applicantProfile?.longitude && (
+                                <div>
+                                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2 flex items-center gap-1">
+                                        <MapPin className="w-4 h-4" /> Location Preference
+                                    </p>
+                                    <p className="text-gray-700 mb-3">{selectedApplicant.applicant.applicantProfile.locationPreference || 'Location mapped below:'}</p>
+                                    <div className="h-64 w-full rounded-xl overflow-hidden border border-gray-200">
+                                        <MapContainer center={[selectedApplicant.applicant.applicantProfile.latitude, selectedApplicant.applicant.applicantProfile.longitude]} zoom={14} className="h-full w-full">
+                                            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                            <Marker position={[selectedApplicant.applicant.applicantProfile.latitude, selectedApplicant.applicant.applicantProfile.longitude]} />
+                                        </MapContainer>
+                                    </div>
+                                </div>
+                            )}
+                            
+                            <div className="flex justify-end pt-4 border-t border-gray-100 gap-3">
+                                <button onClick={() => setSelectedApplicant(null)} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium">Close</button>
+                                {selectedApplicant.resumePath || selectedApplicant.applicant.applicantProfile?.resumePath ? (
+                                    <a
+                                        href={selectedApplicant.resumePath ? `${BASE_URL}${selectedApplicant.resumePath}` : `${BASE_URL}${selectedApplicant.applicant.applicantProfile?.resumePath}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                                    >
+                                        <ExternalLink className="w-4 h-4 mr-2" /> View Resume
+                                    </a>
+                                ) : (
+                                    <span className="text-gray-500 italic mt-2">No resume available</span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">
                     <button
@@ -239,7 +330,7 @@ export default function InternshipApplicants() {
                                         <>
                                             <span className="text-gray-300">•</span>
                                             <a
-                                                href={app.resumePath ? `http://localhost:5000${app.resumePath}` : `http://localhost:5000${app.applicant.applicantProfile?.resumePath}`}
+                                                href={app.resumePath ? `${BASE_URL}${app.resumePath}` : `${BASE_URL}${app.applicant.applicantProfile?.resumePath}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800 transition"
@@ -249,6 +340,13 @@ export default function InternshipApplicants() {
                                             </a>
                                         </>
                                     )}
+                                    <span className="text-gray-300">•</span>
+                                    <button 
+                                        onClick={() => setSelectedApplicant(app)}
+                                        className="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800 transition"
+                                    >
+                                        View Full Profile
+                                    </button>
                                 </div>
 
                                 {app.coverMessage && (

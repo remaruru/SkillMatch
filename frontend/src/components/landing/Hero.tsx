@@ -82,9 +82,8 @@ export default function Hero() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: false, amount: 0.1 }}
                     transition={{ duration: 1, delay: 0.8 }}
-                    className="mt-20 relative w-full max-w-4xl"
+                    className="mt-20 relative w-full max-w-4xl z-10"
                 >
-                    <div className="absolute inset-0 bg-gradient-to-t from-gray-50 to-transparent z-10 bottom-0 h-40"></div>
                     <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-8 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
 
                         {/* User Node */}

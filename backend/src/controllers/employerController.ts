@@ -6,18 +6,37 @@ const prisma = new PrismaClient();
 export const updateProfile = async (req: Request, res: Response): Promise<void> => {
     try {
         const userId = (req as any).user.id;
-        const { companyName, industry, location, description } = req.body;
+        const { companyName, industry, location, latitude, longitude, description } = req.body;
 
-        const updatedProfile = await prisma.employerProfile.upsert({
+        const updatedProfile = await (prisma.employerProfile as any).upsert({
             where: { userId },
-            update: { companyName, industry, location, description },
-            create: { userId, companyName: companyName || 'Company', industry, location, description },
+            update: { companyName, industry, location, latitude, longitude, description },
+            create: { userId, companyName: companyName || 'Company', industry, location, latitude, longitude, description },
         });
 
         res.status(200).json(updatedProfile);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error updating company profile' });
+    }
+};
+
+export const getProfile = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = (req as any).user.id;
+        const profile = await prisma.employerProfile.findUnique({
+            where: { userId }
+        });
+
+        if (!profile) {
+            res.status(200).json({ companyName: '', industry: '', location: '', latitude: 14.5995, longitude: 120.9842, description: '' });
+            return;
+        }
+
+        res.status(200).json(profile);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error fetching profile' });
     }
 };
 
@@ -154,6 +173,78 @@ export const updateApplicationStatus = async (req: Request, res: Response): Prom
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error updating application status' });
+    }
+};
+
+export const updateInternship = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = (req as any).user.id;
+        const { id } = req.params;
+        const employer = await prisma.employerProfile.findUnique({ where: { userId } });
+        if (!employer) { res.status(403).json({ error: 'Access denied' }); return; }
+
+        const internship = await prisma.internship.findUnique({ where: { id: Number(id) } });
+        if (!internship || internship.employerId !== employer.id) {
+            res.status(403).json({ error: 'Access denied' }); return;
+        }
+
+        const { title, description, location, latitude, longitude, skills } = req.body;
+
+        let skillConnections: any = [];
+        if (skills && Array.isArray(skills)) {
+            skillConnections = await Promise.all(
+                skills.map(async (skillName: string) => {
+                    const skill = await prisma.skill.upsert({
+                        where: { name: skillName.trim().toLowerCase() },
+                        update: {},
+                        create: { name: skillName.trim().toLowerCase() },
+                    });
+                    return { id: skill.id };
+                })
+            );
+        }
+
+        const updated = await prisma.internship.update({
+            where: { id: Number(id) },
+            data: {
+                title,
+                description,
+                location,
+                latitude,
+                longitude,
+                skills: { set: skillConnections },
+            } as any,
+            include: { skills: true, _count: { select: { applications: true } } },
+        });
+
+        res.status(200).json(updated);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error updating internship' });
+    }
+};
+
+export const deleteInternship = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = (req as any).user.id;
+        const { id } = req.params;
+        const employer = await prisma.employerProfile.findUnique({ where: { userId } });
+        if (!employer) { res.status(403).json({ error: 'Access denied' }); return; }
+
+        const internship = await prisma.internship.findUnique({ where: { id: Number(id) } });
+        if (!internship || internship.employerId !== employer.id) {
+            res.status(403).json({ error: 'Access denied' }); return;
+        }
+
+        // Delete dependent applications and matches first
+        await prisma.application.deleteMany({ where: { internshipId: Number(id) } });
+        await (prisma as any).match.deleteMany({ where: { internshipId: Number(id) } });
+        await prisma.internship.delete({ where: { id: Number(id) } });
+
+        res.status(200).json({ message: 'Internship deleted' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error deleting internship' });
     }
 };
 

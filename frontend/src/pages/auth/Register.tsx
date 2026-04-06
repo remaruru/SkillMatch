@@ -20,7 +20,6 @@ export default function Register() {
         // Applicant specific
         course: '',
         yearLevel: '',
-        skills: '',
         // Employer specific
         companyName: '',
         industry: ''
@@ -68,11 +67,7 @@ export default function Register() {
             if (formData.role === 'APPLICANT') {
                 formDataObj.append('course', formData.course);
                 formDataObj.append('yearLevel', formData.yearLevel);
-                if (formData.skills) {
-                    formData.skills.split(',').map(s => s.trim()).filter(s => s).forEach(skill => {
-                        formDataObj.append('skills[]', skill);
-                    });
-                }
+                // NOTE: skills are NOT submitted at registration — they come from resume upload post-approval
                 if (!schoolIdFile) {
                     setError('School ID image is required to register');
                     setLoading(false);
@@ -275,16 +270,6 @@ export default function Register() {
                                         <option value="4">4th Year</option>
                                         <option value="5">5th Year+</option>
                                     </select>
-                                </div>
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Initial Skills (comma separated)</label>
-                                    <input
-                                        type="text"
-                                        className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                        placeholder="e.g. React, Node.js, Python, Figma"
-                                        value={formData.skills}
-                                        onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
-                                    />
                                 </div>
                                 <div className="md:col-span-2">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">School ID Image <span className="text-red-500">*</span></label>

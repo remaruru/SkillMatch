@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import api from '../../services/api';
+import api, { BASE_URL } from '../../services/api';
 import { Users, Briefcase, FileText, AlertTriangle } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -290,7 +290,7 @@ export default function AdminDashboard() {
                             </button>
                             {selectedApplicant.schoolIdPath ? (
                                 <img
-                                    src={`http://localhost:5000${selectedApplicant.schoolIdPath}`}
+                                    src={`${BASE_URL}${selectedApplicant.schoolIdPath}`}
                                     alt="Student ID"
                                     className="max-w-full h-auto max-h-full object-contain rounded shadow-2xl transition-transform hover:scale-105 duration-300"
                                 />

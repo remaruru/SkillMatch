@@ -8,7 +8,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key-for-skillmatc
 
 export const register = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { name, email, password, role, course, yearLevel, skills, companyName, industry } = req.body;
+        const { name, email, password, role, course, yearLevel, companyName, industry } = req.body;
 
         if (!name || !email || !password || !role) {
             res.status(400).json({ error: 'Name, email, password, and role are required' });
@@ -44,26 +44,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
                     yearLevel: yearLevel || null,
                 }
             });
-
-            // Handle optional array of skill strings
-            if (skills && Array.isArray(skills)) {
-                for (const skillName of skills) {
-                    // find or create skill
-                    const skill = await prisma.skill.upsert({
-                        where: { name: skillName },
-                        update: {},
-                        create: { name: skillName }
-                    });
-                    // Link skill to applicant profile
-                    await prisma.applicantProfile.update({
-                        where: { userId: user.id },
-                        data: {
-                            skills: { connect: { id: skill.id } }
-                        }
-                    });
-                }
-            }
-
+            // Skills are NOT seeded at registration.
+            // They are extracted from a PDF resume upload after account approval.
         } else if (validRole === 'EMPLOYER') {
             await prisma.employerProfile.create({
                 data: {

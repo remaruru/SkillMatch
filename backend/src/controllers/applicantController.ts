@@ -6,30 +6,34 @@ import { calculateMatches } from '../services/matchingService.js';
 
 const prisma = new PrismaClient();
 
+// GET /applicant/profile — return current applicant profile with skills
+export const getProfile = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = (req as any).user.id;
+
+        const profile = await (prisma as any).applicantProfile.findUnique({
+            where: { userId },
+            include: { skills: true }
+        });
+
+        if (!profile) {
+            // Return empty profile shell if not created yet (shouldn't happen after registration)
+            res.status(200).json({ course: null, yearLevel: null, locationPreference: null, latitude: null, longitude: null, resumePath: null, skills: [] });
+            return;
+        }
+
+        res.status(200).json(profile);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error fetching profile' });
+    }
+};
+
 export const updateProfile = async (req: Request, res: Response): Promise<void> => {
     try {
         const userId = (req as any).user.id;
-        const { course, yearLevel, locationPreference, latitude, longitude, skills, resumePath } = req.body;
-
-        // Handle skills update
-        let skillConnectionsSet: any = { set: [] };
-        let skillConnectionsConnect: any = { connect: [] };
-
-        if (skills && Array.isArray(skills)) {
-            // Create skills if they don't exist and map to IDs
-            const skillIds = await Promise.all(
-                skills.map(async (skillName: string) => {
-                    const skill = await prisma.skill.upsert({
-                        where: { name: skillName.trim().toLowerCase() },
-                        update: {},
-                        create: { name: skillName.trim().toLowerCase() },
-                    });
-                    return { id: skill.id };
-                })
-            );
-            skillConnectionsSet = { set: skillIds };
-            skillConnectionsConnect = { connect: skillIds };
-        }
+        // Skills are intentionally excluded — they come from resume upload only
+        const { course, yearLevel, locationPreference, latitude, longitude, resumePath } = req.body;
 
         const updatedProfile = await (prisma as any).applicantProfile.upsert({
             where: { userId },
@@ -40,7 +44,6 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
                 latitude,
                 longitude,
                 resumePath: resumePath || undefined,
-                skills: skillConnectionsSet,
             },
             create: {
                 userId,
@@ -50,14 +53,8 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
                 latitude,
                 longitude,
                 resumePath: resumePath || undefined,
-                skills: skillConnectionsConnect,
             },
             include: { skills: true },
-        });
-
-        // Recalculate AI matches efficiently in the background
-        setImmediate(async () => {
-             try { await calculateMatches(userId); } catch (e) { console.error('Match recalc error:', e); }
         });
 
         res.status(200).json(updatedProfile);
@@ -109,9 +106,19 @@ export const getMyApplications = async (req: Request, res: Response): Promise<vo
 
         const applications = await prisma.application.findMany({
             where: { applicantId: userId },
-            include: {
+            select: {
+                id: true,
+                status: true,
+                appliedAt: true,
+                resumePath: true,
+                coverMessage: true,
                 internship: {
-                    include: { employer: { include: { user: { select: { name: true } } } } }
+                    select: {
+                        id: true,
+                        title: true,
+                        location: true,
+                        employer: { include: { user: { select: { name: true } } } }
+                    }
                 }
             },
             orderBy: { appliedAt: 'desc' }
@@ -140,44 +147,69 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
         // 1. Extract raw text from PDF
         const resumeText = await extractTextFromPDF(absolutePath);
 
-        // 2. Extract technical skills using LLM
-        const extractedSkills = await extractSkillsFromText(resumeText);
+        // 2. Extract skills: Gemini AI first, keyword fallback if needed
+        let extractedSkills: string[] = [];
+        let usedFallback = false;
 
-        // 3. Optional: save path to DB immediately
+        const result = await extractSkillsFromText(resumeText);
+        extractedSkills = result.skills;
+        usedFallback = result.usedFallback;
+
+        console.log(`[Upload] Skills extracted: ${extractedSkills.length} (fallback: ${usedFallback})`);
+
+        // 3. Save resume path to profile
         await (prisma as any).applicantProfile.upsert({
             where: { userId },
             update: { resumePath },
             create: { userId, resumePath }
         });
 
+        // 4. Save skills — normalize to consistent display form before upserting
+        //    This ensures "Python" matches "python" in matching (upserted by lowercase key)
         if (extractedSkills.length > 0) {
-            // Update Applicant Profile Skills automatically
             const skillIds = await Promise.all(
                 extractedSkills.map(async (skillName: string) => {
+                    const displayName = skillName.trim();
                     const skill = await prisma.skill.upsert({
-                        where: { name: skillName.trim().toLowerCase() },
+                        where: { name: displayName },
                         update: {},
-                        create: { name: skillName.trim().toLowerCase() },
+                        create: { name: displayName },
                     });
                     return { id: skill.id };
                 })
             );
-
             await (prisma as any).applicantProfile.update({
                 where: { userId },
-                data: { skills: { connect: skillIds } }
+                data: { skills: { set: skillIds } }
+            });
+        } else {
+            // No skills at all — clear stale skills from previous upload
+            await (prisma as any).applicantProfile.update({
+                where: { userId },
+                data: { skills: { set: [] } }
             });
         }
 
-        // 4. Trigger match engine (recalculate scores)
-        setImmediate(async () => {
-             try { await calculateMatches(userId); } catch (e) { console.error('Match recalc error via upload:', e); }
-        });
+        // 5. Trigger match recalculation whenever we have skills
+        if (extractedSkills.length > 0) {
+            setImmediate(async () => {
+                try { await calculateMatches(userId); } catch (e) { console.error('Match recalc error:', e); }
+            });
+        }
+
+        const message = usedFallback
+            ? (extractedSkills.length === 0
+                ? 'Resume uploaded! The AI is currently taking a break, and no standard keywords were found in your resume.'
+                : `Resume uploaded! The AI is currently taking a break, but we extracted ${extractedSkills.length} skills via our fallback system.`)
+            : (extractedSkills.length === 0
+                ? 'Resume uploaded but no professional skills were detected. Try a text-based PDF with clearly listed skills.'
+                : `Resume uploaded and ${extractedSkills.length} skills extracted by AI successfully!`);
 
         res.status(200).json({
-            message: 'Resume uploaded and processed successfully!',
+            message,
             path: resumePath,
-            skills: extractedSkills
+            skills: extractedSkills,
+            usedFallback
         });
     } catch (error: any) {
         console.error('Upload Process Error:', error);

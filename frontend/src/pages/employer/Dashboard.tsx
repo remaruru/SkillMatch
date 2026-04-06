@@ -136,8 +136,8 @@ export default function EmployerDashboard() {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <Link to={`/employer/internships/${job.id}/applicants`} className="text-indigo-600 hover:text-indigo-900 mr-3">View Applicants</Link>
-                                        <button className="text-gray-500 hover:text-gray-700">Edit</button>
+                                        <Link to={`/employer/internships/${job.id}/applicants`} className="text-indigo-600 hover:text-indigo-900 mr-4">View Applicants</Link>
+                                        <Link to="/employer/internships" className="text-gray-500 hover:text-gray-700">Manage</Link>
                                     </td>
                                 </tr>
                             ))}
