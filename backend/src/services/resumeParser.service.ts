@@ -7,8 +7,22 @@ import { pathToFileURL } from 'url';
  * Worker is pointed at the bundled worker file so Node.js can spin it up.
  */
 export const extractTextFromPDF = async (filePath: string): Promise<string> => {
-    if (!fs.existsSync(filePath)) {
-        throw new Error(`Resume file not found on server at path: ${filePath}`);
+    let data: Uint8Array;
+
+    if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+        try {
+            const response = await fetch(filePath);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const arrayBuffer = await response.arrayBuffer();
+            data = new Uint8Array(arrayBuffer);
+        } catch (error: any) {
+             throw new Error(`Failed to download resume from cloud storage at path: ${filePath}. Error: ${error.message}`);
+        }
+    } else {
+        if (!fs.existsSync(filePath)) {
+            throw new Error(`Resume file not found on server at path: ${filePath}`);
+        }
+        data = new Uint8Array(fs.readFileSync(filePath));
     }
 
     // Dynamically import pdfjs-dist (full ESM, no createRequire needed)
@@ -21,8 +35,6 @@ export const extractTextFromPDF = async (filePath: string): Promise<string> => {
         'node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs'
     );
     pdfjs.GlobalWorkerOptions.workerSrc = pathToFileURL(workerPath).toString();
-
-    const data = new Uint8Array(fs.readFileSync(filePath));
 
     let pdfDoc: any;
     try {
