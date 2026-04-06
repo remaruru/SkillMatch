@@ -19,10 +19,6 @@ services:
         sync: false          # You set this manually in Render dashboard
       - key: FRONTEND_URL
         sync: false          # You set this after frontend deploys
-    disk:
-      name: uploads
-      mountPath: /app/uploads
-      sizeGB: 1
 
   # ── Frontend (Static Site) ─────────────────────────────────────────────────
   - type: web
