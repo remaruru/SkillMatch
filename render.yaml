@@ -3,7 +3,7 @@ services:
   - type: web
     name: skillmatch-backend
     runtime: node
-    plan: free # Explicitly set to free tier
+    plan: free # Correct for Web Services
     rootDir: backend
     buildCommand: npm install && npm run build
     startCommand: npm run start
@@ -26,10 +26,8 @@ services:
         sync: false
 
   # ── Frontend (Static Site) ─────────────────────────────────────────────────
-  - type: web
+  - type: static
     name: skillmatch-frontend
-    runtime: static
-    plan: free # Explicitly set to free tier
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
