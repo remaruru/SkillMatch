@@ -3,7 +3,7 @@ services:
   - type: web
     name: skillmatch-backend
     runtime: node
-    plan: free # Correct for Web Services
+    plan: free # Correct for Web Services with Node runtime
     rootDir: backend
     buildCommand: npm install && npm run build
     startCommand: npm run start
@@ -26,8 +26,9 @@ services:
         sync: false
 
   # ── Frontend (Static Site) ─────────────────────────────────────────────────
-  - type: static
+  - type: web
     name: skillmatch-frontend
+    runtime: static # Important: This tells Render it's a static site
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
