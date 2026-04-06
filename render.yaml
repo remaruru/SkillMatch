@@ -3,6 +3,7 @@ services:
   - type: web
     name: skillmatch-backend
     runtime: node
+    plan: free
     rootDir: backend
     buildCommand: npm install && npm run build
     startCommand: npm run start
@@ -14,22 +15,23 @@ services:
           name: skillmatch-db
           property: connectionString
       - key: JWT_SECRET
-        sync: false          # You set this manually in Render dashboard
+        sync: false
       - key: GEMINI_API_KEY
-        sync: false          # You set this manually in Render dashboard
+        sync: false
       - key: FRONTEND_URL
-        sync: false          # You set this after frontend deploys
+        sync: false
 
   # ── Frontend (Static Site) ─────────────────────────────────────────────────
   - type: web
     name: skillmatch-frontend
     runtime: static
+    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
     envVars:
       - key: VITE_API_URL
-        sync: false          # You set this after backend deploys
+        sync: false
 
 # ── PostgreSQL Database ────────────────────────────────────────────────────
 databases:
