@@ -2,6 +2,14 @@
 
 SkillMatch is a specialized platform designed to automate and optimize the internship recruitment process using artificial intelligence. By leveraging the Google Gemini API, the system analyzes student resumes to extract technical skills and calculates a compatibility score against employer requirements.
 
+## Live Demo
+
+The application is deployed on Render:
+- **Frontend:** https://skillmatch-frontend.onrender.com
+- **Backend API:** https://skillmatch-backend.onrender.com
+
+---
+
 ## Core Objective
 
 The primary goal of SkillMatch is to eliminate the inefficiency of manual resume screening. It provides students with data-driven insights into their career fit and allows employers to prioritize candidates based on objective technical alignment.
@@ -45,40 +53,73 @@ The process for administrators ensures platform integrity and data compliance:
 
 ## Technical Stack
 
-- Frontend: React 19, Vite, TypeScript, TailwindCSS
-- Backend: Node.js, Express, TypeScript
-- Database: MySQL (managed via XAMPP), Prisma ORM
-- AI Engine: Google Gemini Pro (via @google/generative-ai)
-- Map Services: React Leaflet (OpenStreetMap)
-- Utilities: pdf-parse for resume extraction, Multer for file uploads
+- **Frontend:** React 19, Vite, TypeScript, TailwindCSS
+- **Backend:** Node.js, Express, TypeScript
+- **Database:** PostgreSQL (hosted on Render), Prisma ORM
+- **AI Engine:** Google Gemini Pro (via @google/generative-ai)
+- **File Storage:** Cloudinary (resume & school ID uploads in production)
+- **Map Services:** React Leaflet (OpenStreetMap)
+- **Utilities:** pdf-parse for resume text extraction, Multer for file handling
+- **Deployment:** Render (backend as Web Service, frontend as Static Site)
 
 ---
 
-## Setup and Installation
+## Setup and Installation (Local Development)
 
 ### 1. Prerequisites
 - Node.js v18 or higher
-- XAMPP installed and running (MySQL service)
+- A PostgreSQL database (local or cloud — [Render](https://render.com) provides a free tier)
 
 ### 2. Backend Configuration
 1. Navigate to the backend directory: `cd backend`
 2. Install dependencies: `npm install`
-3. Create a .env file and configure the following variables:
-   - DATABASE_URL (MySQL connection string)
-   - PORT (default 5000)
-   - JWT_SECRET (secure random string)
-   - GEMINI_API_KEY (API key from Google AI Studio)
-4. Push the database schema: `npx prisma db push`
-5. Seed the initial admin and test accounts: `npx tsx prisma/seed.ts`
-6. Start the server: `npm run dev`
+3. Copy the environment template: `cp .env.example .env` (or `Copy-Item .env.example .env` on PowerShell)
+4. Edit `.env` and fill in the following variables:
+   ```env
+   DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=require"
+   JWT_SECRET="any-long-random-string"
+   GEMINI_API_KEY=""              # Optional — AI extraction is skipped if missing
+   FRONTEND_URL="http://localhost:5173"
+
+   # Cloudinary (required for file uploads in production)
+   CLOUDINARY_CLOUD_NAME=""
+   CLOUDINARY_API_KEY=""
+   CLOUDINARY_API_SECRET=""
+   ```
+5. Push the database schema: `npx prisma db push`
+6. Seed the initial admin and test accounts: `npx tsx prisma/seed.ts`
+7. Start the server: `npm run dev`
 
 ### 3. Frontend Configuration
 1. Navigate to the frontend directory: `cd frontend`
 2. Install dependencies: `npm install`
-3. Start the development server: `npm run dev`
+3. Set the API URL (create `frontend/.env`):
+   ```env
+   VITE_API_URL=http://localhost:5000
+   ```
+4. Start the development server: `npm run dev`
 
-The application will be accessible at http://localhost:5173.
+The application will be accessible at **http://localhost:5173**.
 
 ---
 
-Project developed for the SkillMatch Capstone.
+## Deployment (Render)
+
+This project includes a `render.yaml` file for one-click deployment on Render.
+
+**Required environment variables to set in the Render dashboard:**
+
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string from Render DB |
+| `JWT_SECRET` | Secure random string |
+| `GEMINI_API_KEY` | Google AI Studio API key |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret |
+| `FRONTEND_URL` | Your Render frontend static site URL |
+| `VITE_API_URL` | Your Render backend URL (for the frontend service) |
+
+---
+
+*Project developed for the SkillMatch Capstone — April 2026*
