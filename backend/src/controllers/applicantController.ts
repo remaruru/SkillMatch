@@ -1,10 +1,8 @@
 import type { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/prisma.js';
 import { extractTextFromPDF } from '../services/resumeParser.service.js';
 import { extractSkillsFromText } from '../services/llm.service.js';
 import { calculateMatches } from '../services/matchingService.js';
-
-const prisma = new PrismaClient();
 
 // GET /applicant/profile — return current applicant profile with skills
 export const getProfile = async (req: Request, res: Response): Promise<void> => {

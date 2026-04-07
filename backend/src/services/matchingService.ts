@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/prisma.js';
 
-const prisma = new PrismaClient();
 
 /** Confidence level based on match score */
 const getConfidence = (score: number): 'High' | 'Medium' | 'Low' => {
