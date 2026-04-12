@@ -86,7 +86,7 @@ export const applyToInternship = async (req: Request, res: Response): Promise<vo
             data: {
                 applicantId: userId,
                 internshipId: Number(internshipId),
-                resumePath: `/uploads/${resumeFile.filename}`,
+                resumePath: resumeFile.path, // Cloudinary URL
                 coverMessage: coverMessage || null
             },
         });
@@ -139,11 +139,11 @@ export const uploadResume = async (req: Request, res: Response): Promise<void> =
             return;
         }
 
-        const resumePath = `/uploads/${resumeFile.filename}`;
-        const absolutePath = resumeFile.path;
+        const resumePath = resumeFile.path; // Cloudinary URL
+        const cloudinaryUrl = resumeFile.path;
 
-        // 1. Extract raw text from PDF
-        const resumeText = await extractTextFromPDF(absolutePath);
+        // 1. Extract raw text from PDF (via Cloudinary URL)
+        const resumeText = await extractTextFromPDF(cloudinaryUrl);
 
         // 2. Extract skills: Gemini AI first, keyword fallback if needed
         let extractedSkills: string[] = [];
