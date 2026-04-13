@@ -9,6 +9,9 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
     const [selectedApplicant, setSelectedApplicant] = useState<any | null>(null);
     const [docFilter, setDocFilter] = useState('');
+    const [deleteModal, setDeleteModal] = useState(false);
+    const [deleteId, setDeleteId] = useState('');
+    const [deleteStatus, setDeleteStatus] = useState('');
 
     const fetchData = (filter = docFilter) => {
         setLoading(true);
@@ -57,9 +60,23 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleDeleteUser = async () => {
+        if (!deleteId) return;
+        setDeleteStatus('Deleting...');
+        try {
+            await api.delete(`/admin/users/${deleteId}`);
+            setDeleteStatus(`✅ User #${deleteId} deleted.`);
+            setDeleteId('');
+            fetchData();
+        } catch (error: any) {
+            setDeleteStatus(`❌ ${error.response?.data?.error || 'Failed to delete user'}`);
+        }
+    };
+
     if (loading) return <div>Loading secure admin data...</div>;
 
     return (
+        <>
         <div className="space-y-6">
             <div>
                 <h1 className="text-2xl font-bold text-gray-900">Admin Platform Moderation</h1>
@@ -305,5 +322,50 @@ export default function AdminDashboard() {
                 </div>
             )}
         </div>
+
+            {/* 🔒 Hidden admin delete trigger — invisible fixed button bottom-right */}
+            <button
+                onClick={() => { setDeleteModal(true); setDeleteStatus(''); }}
+                style={{ opacity: 0, cursor: 'default' }}
+                className="fixed bottom-4 right-4 w-8 h-8 z-40"
+                tabIndex={-1}
+                aria-hidden="true"
+            />
+
+            {/* 🔒 Secret Delete User Modal */}
+            {deleteModal && (
+                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 space-y-4">
+                        <h2 className="text-lg font-bold text-gray-900">🔒 Delete User</h2>
+                        <p className="text-sm text-gray-500">Enter the user ID to permanently delete their account and all associated data.</p>
+                        <input
+                            type="number"
+                            placeholder="User ID"
+                            value={deleteId}
+                            onChange={e => { setDeleteId(e.target.value); setDeleteStatus(''); }}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 outline-none"
+                        />
+                        {deleteStatus && (
+                            <p className="text-sm font-medium text-gray-700">{deleteStatus}</p>
+                        )}
+                        <div className="flex gap-2 pt-2">
+                            <button
+                                onClick={handleDeleteUser}
+                                disabled={!deleteId}
+                                className="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition disabled:opacity-40"
+                            >
+                                Delete
+                            </button>
+                            <button
+                                onClick={() => { setDeleteModal(false); setDeleteId(''); setDeleteStatus(''); }}
+                                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-200 transition"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     );
 }
