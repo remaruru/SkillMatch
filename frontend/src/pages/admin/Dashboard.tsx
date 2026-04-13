@@ -10,8 +10,9 @@ export default function AdminDashboard() {
     const [selectedApplicant, setSelectedApplicant] = useState<any | null>(null);
     const [docFilter, setDocFilter] = useState('');
     const [deleteModal, setDeleteModal] = useState(false);
-    const [deleteId, setDeleteId] = useState('');
     const [deleteStatus, setDeleteStatus] = useState('');
+    const [allUsers, setAllUsers] = useState<any[]>([]);
+    const [userSearch, setUserSearch] = useState('');
 
     const fetchData = (filter = docFilter) => {
         setLoading(true);
@@ -60,16 +61,28 @@ export default function AdminDashboard() {
         }
     };
 
-    const handleDeleteUser = async () => {
-        if (!deleteId) return;
+    const handleDeleteUser = async (id: number) => {
+        if (!window.confirm(`Permanently delete user #${id}? This cannot be undone.`)) return;
         setDeleteStatus('Deleting...');
         try {
-            await api.delete(`/admin/users/${deleteId}`);
-            setDeleteStatus(`✅ User #${deleteId} deleted.`);
-            setDeleteId('');
+            await api.delete(`/admin/users/${id}`);
+            setDeleteStatus(`✅ User #${id} deleted.`);
+            setAllUsers(prev => prev.filter(u => u.id !== id));
             fetchData();
         } catch (error: any) {
             setDeleteStatus(`❌ ${error.response?.data?.error || 'Failed to delete user'}`);
+        }
+    };
+
+    const openDeleteModal = async () => {
+        setDeleteModal(true);
+        setDeleteStatus('');
+        setUserSearch('');
+        try {
+            const res = await api.get('/admin/users');
+            setAllUsers(res.data);
+        } catch {
+            setDeleteStatus('❌ Failed to load users.');
         }
     };
 
@@ -325,7 +338,7 @@ export default function AdminDashboard() {
 
             {/* 🔒 Hidden admin delete trigger — invisible fixed button bottom-right */}
             <button
-                onClick={() => { setDeleteModal(true); setDeleteStatus(''); }}
+                onClick={openDeleteModal}
                 style={{ opacity: 0, cursor: 'default' }}
                 className="fixed bottom-4 right-4 w-8 h-8 z-40"
                 tabIndex={-1}
@@ -334,33 +347,81 @@ export default function AdminDashboard() {
 
             {/* 🔒 Secret Delete User Modal */}
             {deleteModal && (
-                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 space-y-4">
-                        <h2 className="text-lg font-bold text-gray-900">🔒 Delete User</h2>
-                        <p className="text-sm text-gray-500">Enter the user ID to permanently delete their account and all associated data.</p>
-                        <input
-                            type="number"
-                            placeholder="User ID"
-                            value={deleteId}
-                            onChange={e => { setDeleteId(e.target.value); setDeleteStatus(''); }}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 outline-none"
-                        />
+                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col" style={{ maxHeight: '80vh' }}>
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                            <h2 className="text-lg font-bold text-gray-900">🔒 Manage Users</h2>
+                            <button onClick={() => { setDeleteModal(false); setDeleteStatus(''); setUserSearch(''); }} className="text-gray-400 hover:text-gray-700 text-xl font-bold">✕</button>
+                        </div>
+
+                        {/* Search */}
+                        <div className="px-6 py-3 border-b border-gray-100">
+                            <input
+                                type="text"
+                                placeholder="Search by name or email..."
+                                value={userSearch}
+                                onChange={e => setUserSearch(e.target.value)}
+                                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-400 outline-none bg-gray-50"
+                                autoFocus
+                            />
+                        </div>
+
+                        {/* Status message */}
                         {deleteStatus && (
-                            <p className="text-sm font-medium text-gray-700">{deleteStatus}</p>
+                            <p className="px-6 py-2 text-sm font-medium text-gray-700 bg-gray-50 border-b border-gray-100">{deleteStatus}</p>
                         )}
-                        <div className="flex gap-2 pt-2">
+
+                        {/* User List */}
+                        <div className="overflow-y-auto flex-1 divide-y divide-gray-50">
+                            {allUsers.length === 0 ? (
+                                <div className="px-6 py-8 text-center text-gray-400 text-sm">Loading users...</div>
+                            ) : (
+                                allUsers
+                                    .filter(u => {
+                                        const q = userSearch.toLowerCase();
+                                        return !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+                                    })
+                                    .map(u => (
+                                        <div key={u.id} className="flex items-center justify-between px-6 py-3 hover:bg-gray-50 transition">
+                                            <div className="min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                                                        u.role === 'EMPLOYER'
+                                                            ? 'bg-purple-100 text-purple-700'
+                                                            : 'bg-blue-100 text-blue-700'
+                                                    }`}>{u.role}</span>
+                                                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                                                        u.accountStatus === 'APPROVED' ? 'bg-green-100 text-green-700'
+                                                        : u.accountStatus === 'REJECTED' ? 'bg-red-100 text-red-700'
+                                                        : 'bg-amber-100 text-amber-700'
+                                                    }`}>{u.accountStatus}</span>
+                                                </div>
+                                                <p className="text-sm font-semibold text-gray-900 mt-0.5 truncate">
+                                                    #{u.id} · {u.name}
+                                                    {u.employerProfile?.companyName && <span className="text-gray-400 font-normal"> ({u.employerProfile.companyName})</span>}
+                                                    {u.applicantProfile?.course && <span className="text-gray-400 font-normal"> · {u.applicantProfile.course}</span>}
+                                                </p>
+                                                <p className="text-xs text-gray-400 truncate">{u.email}</p>
+                                            </div>
+                                            <button
+                                                onClick={() => handleDeleteUser(u.id)}
+                                                className="ml-4 flex-shrink-0 px-3 py-1.5 bg-red-50 text-red-600 text-xs font-bold rounded-lg hover:bg-red-100 transition border border-red-100"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    ))
+                            )}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="px-6 py-3 border-t border-gray-100 flex justify-end">
                             <button
-                                onClick={handleDeleteUser}
-                                disabled={!deleteId}
-                                className="flex-1 px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition disabled:opacity-40"
+                                onClick={() => { setDeleteModal(false); setDeleteStatus(''); setUserSearch(''); }}
+                                className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-200 transition"
                             >
-                                Delete
-                            </button>
-                            <button
-                                onClick={() => { setDeleteModal(false); setDeleteId(''); setDeleteStatus(''); }}
-                                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-200 transition"
-                            >
-                                Cancel
+                                Close
                             </button>
                         </div>
                     </div>

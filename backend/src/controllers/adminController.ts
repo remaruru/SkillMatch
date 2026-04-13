@@ -2,6 +2,29 @@ import type { Request, Response } from 'express';
 import prisma from '../lib/prisma.js';
 
 
+export const getAllUsers = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const users = await prisma.user.findMany({
+            where: { role: { not: 'ADMIN' } },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                accountStatus: true,
+                createdAt: true,
+                applicantProfile: { select: { course: true } },
+                employerProfile: { select: { companyName: true } },
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.status(200).json(users);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error fetching users' });
+    }
+};
+
 export const getSystemStats = async (req: Request, res: Response): Promise<void> => {
     try {
         const usersCount = await prisma.user.count();
