@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ExternalLink, UserCircle2, MapPin } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import api, { BASE_URL } from '../../services/api';
+import api, { getResumeUrl } from '../../services/api';
 import { getMatchColor } from '../../utils/colorUtils';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -228,7 +228,7 @@ export default function InternshipApplicants() {
                                 <button onClick={() => setSelectedApplicant(null)} className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium">Close</button>
                                 {selectedApplicant.resumePath || selectedApplicant.applicant.applicantProfile?.resumePath ? (
                                     <a
-                                        href={selectedApplicant.resumePath ? `${BASE_URL}${selectedApplicant.resumePath}` : `${BASE_URL}${selectedApplicant.applicant.applicantProfile?.resumePath}`}
+                                        href={getResumeUrl(selectedApplicant.resumePath ?? selectedApplicant.applicant.applicantProfile?.resumePath) ?? '#'}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
@@ -330,7 +330,7 @@ export default function InternshipApplicants() {
                                         <>
                                             <span className="text-gray-300">•</span>
                                             <a
-                                                href={app.resumePath ? `${BASE_URL}${app.resumePath}` : `${BASE_URL}${app.applicant.applicantProfile?.resumePath}`}
+                                                href={getResumeUrl(app.resumePath ?? app.applicant.applicantProfile?.resumePath) ?? '#'}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800 transition"

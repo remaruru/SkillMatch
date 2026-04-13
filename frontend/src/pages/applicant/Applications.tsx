@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import api, { BASE_URL } from '../../services/api';
+import api, { getResumeUrl } from '../../services/api';
 import {
     CheckCircle, Clock, XCircle, FileText, Briefcase,
     Building2, CalendarDays, Search, Eye, SlidersHorizontal
@@ -251,7 +251,7 @@ export default function ApplicantApplications() {
                                             </span>
                                             {app.resumePath && (
                                                 <a
-                                                    href={`${BASE_URL}${app.resumePath}`}
+                                                    href={getResumeUrl(app.resumePath) ?? '#'}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="flex items-center gap-1 text-indigo-500 hover:text-indigo-700 font-medium transition"

@@ -11,6 +11,14 @@ const API_URL = envUrl || 'http://localhost:5000/api';
 // Base URL is used for things like image loading
 export const BASE_URL = API_URL.replace('/api', '');
 
+// Returns a usable URL for a stored resume path.
+// Handles both full Cloudinary URLs (new uploads) and legacy /uploads/... paths.
+export const getResumeUrl = (path: string | null | undefined): string | null => {
+    if (!path) return null;
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    return `${BASE_URL}${path}`;
+};
+
 
 const api = axios.create({
     baseURL: API_URL,
