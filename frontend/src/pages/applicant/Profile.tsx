@@ -127,7 +127,7 @@ export default function ApplicantProfile() {
 
             <div className="space-y-8">
                 {/* Academic Info Module */}
-                <form onSubmit={handleBasicInfoSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-6">
+                <form onSubmit={handleBasicInfoSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-8 space-y-6">
                     <h2 className="text-xl font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2">Academic & Location Info</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -156,14 +156,14 @@ export default function ApplicantProfile() {
                         onChange={(loc) => setProfile(prev => ({ ...prev, locationPreference: loc.address, latitude: loc.latitude, longitude: loc.longitude }))}
                     />
                     <div className="pt-4 flex justify-end gap-3">
-                        <button type="submit" disabled={saving} className="px-5 py-2 text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg font-medium shadow-sm transition-all disabled:opacity-50">
+                        <button type="submit" disabled={saving} className="w-full sm:w-auto px-5 py-2 text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg font-medium shadow-sm transition-all disabled:opacity-50">
                             {saving ? 'Saving...' : 'Save Academic Details'}
                         </button>
                     </div>
                 </form>
 
                 {/* Resume Upload + AI Skills Module */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-6">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-8 space-y-6">
                     <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-2">Resume & AI Skill Extraction</h2>
 
                     {/* Current resume status */}
@@ -205,7 +205,7 @@ export default function ApplicantProfile() {
                             <button
                                 type="submit"
                                 disabled={uploading || !resumeFile}
-                                className="flex items-center gap-2 px-5 py-2 text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg font-medium shadow-sm transition-all disabled:opacity-50"
+                                className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2 text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg font-medium shadow-sm transition-all disabled:opacity-50"
                             >
                                 <UploadCloud className="h-4 w-4" />
                                 {uploading ? 'Uploading & Analyzing...' : 'Upload & Extract Skills'}

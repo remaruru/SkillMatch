@@ -249,7 +249,7 @@ export default function AdminDashboard() {
             {/* Student Verification Modal */}
             {selectedApplicant && (
                 <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 px-4 py-8" onClick={() => setSelectedApplicant(null)}>
-                    <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full p-0 relative flex flex-col md:flex-row max-h-full overflow-hidden animate-in fade-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full p-0 relative flex flex-col md:flex-row max-h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
                         
                         {/* Left Side: Information Panel */}
                         <div className="w-full md:w-1/3 bg-gray-50 p-6 md:p-8 border-b md:border-b-0 md:border-r border-gray-200 flex flex-col justify-between overflow-y-auto">

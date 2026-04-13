@@ -366,7 +366,7 @@ export default function ApplicantDashboard() {
                         </div>
                         
                         <div className="space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Industry</p>
                                     <p className="text-gray-900 font-medium">{selectedEmployer.industry || 'Not specified'}</p>

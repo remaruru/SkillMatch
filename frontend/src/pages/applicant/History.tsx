@@ -44,7 +44,25 @@ export default function ApplicantHistory() {
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
+
+                {/* Mobile card list */}
+                <div className="md:hidden divide-y divide-gray-100">
+                    {applications.length === 0 ? (
+                        <div className="p-8 text-center text-gray-500 text-sm">No application history found.</div>
+                    ) : applications.map(app => (
+                        <div key={app.id} className="p-4 flex items-start justify-between gap-3">
+                            <div>
+                                <p className="font-semibold text-sm text-gray-900">{app.internship.title}</p>
+                                <p className="text-xs text-gray-500 mt-0.5">{app.internship.employer.user.name}</p>
+                                <p className="text-xs text-gray-400 mt-1">{new Date(app.appliedAt).toLocaleDateString()}</p>
+                            </div>
+                            <div className="flex-shrink-0">{getStatusBadge(app.status)}</div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Desktop table */}
+                <table className="hidden md:table min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
@@ -64,8 +82,9 @@ export default function ApplicantHistory() {
                         ))}
                     </tbody>
                 </table>
-                {applications.length === 0 && <div className="p-8 text-center text-gray-500">No application history found.</div>}
+                {applications.length === 0 && <div className="hidden md:block p-8 text-center text-gray-500">No application history found.</div>}
             </div>
+
         </div>
     );
 }

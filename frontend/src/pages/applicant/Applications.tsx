@@ -165,27 +165,30 @@ export default function ApplicantApplications() {
             </div>
 
             {/* ── Status Tabs ── */}
-            <div className="flex gap-2 flex-wrap">
-                {ALL_STATUSES.map(status => {
-                    const isActive = filterStatus === status;
-                    const count = counts[status];
-                    return (
-                        <button
-                            key={status}
-                            onClick={() => setFilterStatus(status)}
-                            className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-all ${isActive
-                                ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                                : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:text-indigo-600'
-                                }`}
-                        >
-                            {status === 'ALL' ? 'All' : STATUS_CONFIG[status as keyof typeof STATUS_CONFIG]?.label ?? status}
-                            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
-                                {count}
-                            </span>
-                        </button>
-                    );
-                })}
+            <div className="overflow-x-auto pb-1">
+                <div className="flex gap-2 min-w-max sm:min-w-0 sm:flex-wrap">
+                    {ALL_STATUSES.map(status => {
+                        const isActive = filterStatus === status;
+                        const count = counts[status];
+                        return (
+                            <button
+                                key={status}
+                                onClick={() => setFilterStatus(status)}
+                                className={`px-4 py-1.5 rounded-full text-sm font-semibold border transition-all whitespace-nowrap ${isActive
+                                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                                    : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:text-indigo-600'
+                                    }`}
+                            >
+                                {status === 'ALL' ? 'All' : STATUS_CONFIG[status as keyof typeof STATUS_CONFIG]?.label ?? status}
+                                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                                    {count}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
+
 
             {/* ── Application Cards ── */}
             {filtered.length === 0 ? (
