@@ -137,3 +137,17 @@ export const rejectUser = async (req: Request, res: Response): Promise<void> => 
         res.status(500).json({ error: 'Error rejecting user' });
     }
 };
+
+export const deleteUser = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        await prisma.user.delete({
+            where: { id: Number(id) }
+        });
+        res.status(200).json({ message: 'User permanently deleted' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error deleting user' });
+    }
+};
+
