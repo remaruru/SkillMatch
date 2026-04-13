@@ -122,4 +122,14 @@ This project includes a `render.yaml` file for one-click deployment on Render.
 
 ---
 
-*Project developed for the SkillMatch Capstone — April 2026*
+## Team
+
+| Name |
+|---|
+| Roldan, Earl Angelo L. |
+| Barrientos, Clark |
+| Muñoz, Jhon Marvin |
+| Rosales, Enzo Benedict T. |
+| Salazar, Maria Cielo L. |
+
+*SkillMatch Capstone — April 2026*
