@@ -132,4 +132,3 @@ This project includes a `render.yaml` file for one-click deployment on Render.
 | Rosales, Enzo Benedict T. |
 | Salazar, Maria Cielo L. |
 
-*SkillMatch Capstone — April 2026*
