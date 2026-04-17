@@ -5,7 +5,7 @@ SkillMatch is a specialized platform designed to automate and optimize the inter
 ## Live Demo
 
 The application is deployed on Render:
-- **Frontend:** https://skillmatch-frontend.onrender.com
+- **Frontend:** https://skillmatch-frontend-acsb.onrender.com
 - **Backend API:** https://skillmatch-backend.onrender.com
 
 ---
